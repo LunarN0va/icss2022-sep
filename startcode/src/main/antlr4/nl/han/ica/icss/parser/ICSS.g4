@@ -35,15 +35,69 @@ WS: [ \t\r\n]+ -> skip;
 OPEN_BRACE: '{';
 CLOSE_BRACE: '}';
 SEMICOLON: ';';
+COMMA: ',';
 COLON: ':';
 PLUS: '+';
 MIN: '-';
 MUL: '*';
+DIV: '/';
 ASSIGNMENT_OPERATOR: ':=';
 
 
 
 
 //--- PARSER: ---
-stylesheet: EOF;
 
+//Een ICSS bestand heeft een styleRule (sterk geïnspireerd door CSS)
+stylesheet: styleRule* EOF;
+
+//styleRule: syntax van styles wordt gedefinieerd.
+//Syntax: [selector] { [property] : [value] }
+styleRule
+    : selector OPEN_BRACE body CLOSE_BRACE;
+
+declaration
+    : propertyName COLON value SEMICOLON;
+propertyName
+    : LOWER_IDENT;
+
+
+//Een waarde kan een literal zijn, maar kan ook vermenigvuldigt, gedeelt, opgeteld en vermindert worden.
+value
+    : literal
+    | value (MUL | DIV) value
+    | value (PLUS | MIN) value;
+
+
+//Literals
+boolLiteral
+    : TRUE | FALSE;
+colorLiteral
+    : COLOR;
+percentageLiteral
+    : PERCENTAGE;
+pixelLiteral
+    : PIXELSIZE;
+scalarLiteral
+    : SCALAR;
+
+//Een literal kan een boolean, kleur, percentage, pixelsize of een scalar zijn.
+literal
+    : boolLiteral
+    | colorLiteral
+    | percentageLiteral
+    | pixelLiteral
+    | scalarLiteral;
+
+//Selectors
+classSelector
+    : CLASS_IDENT;
+tagSelector
+    : LOWER_IDENT;
+idSelector
+    : ID_IDENT | COLOR;
+
+selector: (tagSelector | classSelector | idSelector) (COMMA selector)*;
+
+
+body: (declaration)*;
